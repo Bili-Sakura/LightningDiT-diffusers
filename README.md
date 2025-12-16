@@ -39,6 +39,8 @@ Taming Optimization Dilemma in Latent Diffusion Models</h2>
 
 ## 📰 News
 
+- **[2025.12.16]** **Check our new work [VTP](https://github.com/MiniMax-AI/VTP), a brand new scaling law of visual tokenziers!**
+
 - **[2025.04.04]** VA-VAE has been selected as **Oral Presentation!** 
 
 - **[2025.02.27]** **VA-VAE has been accepted by CVPR 2025!** 🎉🎉🎉
