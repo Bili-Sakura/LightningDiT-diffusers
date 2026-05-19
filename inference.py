@@ -19,8 +19,7 @@ from torch.utils.tensorboard import SummaryWriter
 import torchvision
 # local imports
 from tokenizer.vavae import VA_VAE
-from models.lightningdit import LightningDiT_models
-from transport import create_transport, Sampler
+from lightningdit_diffusers import LightningDiT_models, create_transport, Sampler
 from datasets.img_latent_dataset import ImgLatentDataset
 
 # sample function

@@ -45,7 +45,7 @@ Taming Optimization Dilemma in Latent Diffusion Models</h2>
 
 - **[2025.02.27]** **VA-VAE has been accepted by CVPR 2025!** 🎉🎉🎉
 
-- **[2025.02.25]** We have released [training codes of VA-VAE](vavae)!
+- **[2025.02.25]** VA-VAE tokenizer training previously lived under `vavae/`; that LDM-based tree was removed in favor of Diffusers-style packaging. Use `tokenizer/` for inference and external LDM setups if you need full tokenizer training.
 
 - **[2025.01.16]** More experimental tokenizer variants have been released! You could check them [here](https://huggingface.co/hustvl/va-vae-imagenet256-experimental-variants/tree/main).
 
@@ -79,8 +79,12 @@ The integrated system demonstrates remarkable training efficiency by reaching FI
 conda create -n lightningdit python=3.10.12
 conda activate lightningdit
 pip install -r requirements.txt
+pip install -e .
 ```
 
+The LightningDiT transformer and flow-matching transport are packaged like [NiT-diffusers](https://github.com/Bili-Sakura/NiT-diffusers): sources live under `src/diffusers/` and import as `lightningdit_diffusers`, using Hugging Face Diffusers `ModelMixin` / `ConfigMixin` so checkpoints can follow Diffusers conventions (`save_pretrained` / `from_pretrained` on the transformer). The in-repo `run_train.sh` runs `pip install -e .` automatically.
+
+The previous bundled LDM tokenizer **training** tree (`vavae/`) has been removed; VA-VAE **inference** still uses `tokenizer/` with your pretrained weights. To train a tokenizer from scratch, use the original LDM-based recipe from the paper repository or adapt your own trainer.
 
 ### Inference with Pre-trained Models
 

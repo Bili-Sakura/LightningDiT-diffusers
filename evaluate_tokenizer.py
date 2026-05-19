@@ -23,7 +23,7 @@ from torch.utils.data import DataLoader, DistributedSampler
 from tools.calculate_fid import calculate_fid_given_paths
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from torchmetrics import StructuralSimilarityIndexMeasure
-from models.lpips import LPIPS
+from lightningdit_diffusers.models.lpips import LPIPS
 from torchvision.datasets import ImageFolder
 from torchvision import transforms
 from diffusers.models import AutoencoderKL

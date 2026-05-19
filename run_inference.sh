@@ -1,4 +1,6 @@
-# CONFIG_PATH=$1
+CONFIG_PATH=$1
+
+pip install -e "$(dirname "$0")" -q
 
 GPUS_PER_NODE=${GPUS_PER_NODE:-8}
 NNODES=${WORLD_SIZE:-1}

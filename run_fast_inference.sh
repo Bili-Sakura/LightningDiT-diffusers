@@ -1,5 +1,7 @@
 CONFIG_PATH=$1
 
+pip install -e "$(dirname "$0")" -q
+
 GPUS_PER_NODE=1
 NNODES=1
 NODE_RANK=0

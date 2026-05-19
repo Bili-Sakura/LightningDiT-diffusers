@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lightningdit"
+version = "0.2.0"
+description = "LightningDiT and flow-matching components in Hugging Face Diffusers style."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = [
+    "diffusers>=0.30.1",
+    "torch",
+    "torchvision",
+    "timm>=1.0.12",
+    "accelerate",
+    "torchdiffeq",
+    "scipy",
+    "einops",
+    "safetensors",
+    "omegaconf",
+    "tqdm",
+    "PyYAML",
+    "tensorboard",
+    "fairscale",
+]
+
+[tool.setuptools]
+package-dir = {"lightningdit_diffusers" = "src/diffusers"}
+packages = [
+    "lightningdit_diffusers",
+    "lightningdit_diffusers.transport",
+    "lightningdit_diffusers.models",
+    "lightningdit_diffusers.models.transformers",
+    "lightningdit_diffusers.schedulers",
+    "lightningdit_diffusers.pipelines",
+    "lightningdit_diffusers.pipelines.lightningdit",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7"]

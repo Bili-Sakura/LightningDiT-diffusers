@@ -1,5 +1,8 @@
 CONFIG_PATH=$1
 
+# Editable install exposes ``lightningdit_diffusers`` (sources under ``src/diffusers/``).
+pip install -e "$(dirname "$0")" -q
+
 PRECISION=${PRECISION:-bf16}
 GPUS_PER_NODE=${GPUS_PER_NODE:-8}
 NNODES=${WORLD_SIZE:-1}

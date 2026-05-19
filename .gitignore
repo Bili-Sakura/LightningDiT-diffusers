@@ -4,3 +4,6 @@ output/*
 tensorboard_logs
 *internal*
 guided-diffusion
+*.egg-info
+__pycache__/
+.pytest_cache/

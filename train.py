@@ -29,9 +29,8 @@ from collections import OrderedDict
 from PIL import Image
 from tqdm import tqdm
 
-from diffusers.models import AutoencoderKL
-from models.lightningdit import LightningDiT_models
-from transport import create_transport, Sampler
+
+from lightningdit_diffusers import LightningDiT_models, create_transport, Sampler
 from accelerate import Accelerator
 from datasets.img_latent_dataset import ImgLatentDataset
 
