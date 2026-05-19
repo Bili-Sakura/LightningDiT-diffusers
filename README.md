@@ -39,6 +39,8 @@ Taming Optimization Dilemma in Latent Diffusion Models</h2>
 
 ## 📰 News
 
+- **[2026.05.19]** Native **Diffusers** integration under `src/diffusers` (see [README_DIFFUSERS.md](README_DIFFUSERS.md)).
+
 - **[2025.12.16]** **Check our new work [VTP](https://github.com/MiniMax-AI/VTP), a brand new scaling law of visual tokenziers!**
 
 - **[2025.04.04]** VA-VAE has been selected as **Oral Presentation!** 
@@ -73,59 +75,55 @@ The integrated system demonstrates remarkable training efficiency by reaching FI
 
 ## 🎯 How to Use
 
+This repository provides a **native [Diffusers](https://github.com/huggingface/diffusers)-style** integration for LightningDiT, following the layout of [NiT-diffusers](https://github.com/Bili-Sakura/NiT-diffusers.git). See **[README_DIFFUSERS.md](README_DIFFUSERS.md)** for full API and conversion details.
+
 ### Installation
 
-```
+```bash
 conda create -n lightningdit python=3.10.12
 conda activate lightningdit
-pip install -r requirements.txt
+pip install -e ".[dev]"
 ```
 
 
-### Inference with Pre-trained Models
+### Convert a checkpoint
 
-- Download weights and data infos:
+```bash
+python scripts/convert_lightningdit_to_diffusers.py \
+  --checkpoint path/to/lightningdit-xl-imagenet256-800ep.pt \
+  --output lightningdit-xl-diffusers \
+  --model-size lightningdit-xl/1 \
+  --input-size 16 \
+  --in-channels 32 \
+  --use-swiglu --use-rope --use-rmsnorm \
+  --check-load
+```
 
-    - Download pre-trained models
-        | Tokenizer | Generation Model | FID | FID cfg |
-        |:---------:|:----------------|:----:|:---:|
-        | [VA-VAE](https://huggingface.co/hustvl/vavae-imagenet256-f16d32-dinov2/blob/main/vavae-imagenet256-f16d32-dinov2.pt) | [LightningDiT-XL-800ep](https://huggingface.co/hustvl/lightningdit-xl-imagenet256-800ep/blob/main/lightningdit-xl-imagenet256-800ep.pt) | 2.17 | 1.35 |
-        |           | [LightningDiT-XL-64ep](https://huggingface.co/hustvl/lightningdit-xl-imagenet256-64ep/blob/main/lightningdit-xl-imagenet256-64ep.pt) | 5.14 | 2.11 |
+### Sample images
 
-    - Download [latent statistics](https://huggingface.co/hustvl/vavae-imagenet256-f16d32-dinov2/blob/main/latents_stats.pt). This file contains the channel-wise mean and standard deviation statistics.
+| Tokenizer | Generation Model | FID | FID cfg |
+|:---------:|:----------------|:----:|:---:|
+| [VA-VAE](https://huggingface.co/hustvl/vavae-imagenet256-f16d32-dinov2) | [LightningDiT-XL-800ep](https://huggingface.co/hustvl/lightningdit-xl-imagenet256-800ep) | 2.17 | 1.35 |
+| | [LightningDiT-XL-64ep](https://huggingface.co/hustvl/lightningdit-xl-imagenet256-64ep) | 5.14 | 2.11 |
 
-    - Modify config file in ``configs/reproductions`` as required. 
+Download [latent statistics](https://huggingface.co/hustvl/vavae-imagenet256-f16d32-dinov2/blob/main/latents_stats.pt) for denormalization before VAE decode.
 
-- Fast sample demo images:
+```bash
+python scripts/sample_lightningdit.py \
+  --model lightningdit-xl-diffusers \
+  --class-label 207 \
+  --latent-stats path/to/latents_stats.pt \
+  --num-inference-steps 250 \
+  --guidance-scale 6.7 \
+  --cfg-interval-start 0.125 \
+  --timestep-shift 0.3
+```
 
-    Run:
-    ```
-    bash bash run_fast_inference.sh ${config_path}
-    ```
-    Images will be saved into ``demo_images/demo_samples.png``, e.g. the following one:
-    <div align="center">
-    <img src="images/demo_samples.png" alt="Demo Samples" width="600">
-    </div>
+Reproduction hyperparameters are preserved in `configs/reproductions/` for reference.
 
-- Sample for FID-50k evaluation:
-    
-    Run:
-    ```
-    bash run_inference.sh ${config_path}
-    ```
-    NOTE: The FID result reported by the script serves as a reference value. The final FID-50k reported in paper is evaluated with ADM:
+### Train VA-VAE
 
-    ```
-    git clone https://github.com/openai/guided-diffusion.git
-    
-    # save your npz file with tools/save_npz.py
-    bash run_fid_eval.sh /path/to/your.npz
-    ```
-
-## 🎮 Train Your Own Models
-
- 
-- **We provide a 👆[detailed tutorial](docs/tutorial.md) for training your own models of 2.1 FID score within only 64 epochs. It takes only about 10 hours with 8 x H800 GPUs.** 
+VA-VAE training code remains under [vavae/](vavae/). See [docs/tutorial.md](docs/tutorial.md) for migration notes.
 
 
 ## ❤️ Acknowledgements
