@@ -132,14 +132,43 @@ class LightningDiTPipeline(DiffusionPipeline):
         half_eps = uncond_eps + guidance_scale * (cond_eps - uncond_eps)
         return torch.cat([half_eps, rest], dim=1)
 
+    def _resolve_latent_stats(
+        self,
+        latent_mean: Optional[torch.Tensor],
+        latent_std: Optional[torch.Tensor],
+        device: torch.device,
+        dtype: torch.dtype,
+    ) -> Tuple[Optional[torch.Tensor], Optional[torch.Tensor]]:
+        if latent_mean is not None and latent_std is not None:
+            return latent_mean, latent_std
+        if self.vae is None:
+            return None, None
+        mean = getattr(self.vae.config, "latents_mean", None)
+        std = getattr(self.vae.config, "latents_std", None)
+        if mean is None or std is None:
+            return None, None
+        mean_tensor = torch.tensor(mean, device=device, dtype=dtype).view(1, -1, 1, 1)
+        std_tensor = torch.tensor(std, device=device, dtype=dtype).view(1, -1, 1, 1)
+        return mean_tensor, std_tensor
+
+    @staticmethod
+    def _denormalize_latents(
+        latents: torch.Tensor,
+        latent_mean: torch.Tensor,
+        latent_std: torch.Tensor,
+        latent_multiplier: float,
+    ) -> torch.Tensor:
+        return (latents * latent_std) / latent_multiplier + latent_mean
+
     def _decode_latents(self, latents: torch.Tensor) -> torch.Tensor:
         if self.vae is None:
             return latents
 
         vae_dtype = next(self.vae.parameters()).dtype
         latents = latents.to(dtype=vae_dtype)
-        scaling_factor = getattr(self.vae.config, "scaling_factor", 1.0)
-        latents = latents / scaling_factor
+        scaling_factor = getattr(self.vae.config, "scaling_factor", None)
+        if scaling_factor not in (None, 0):
+            latents = latents / scaling_factor
         image = self.vae.decode(latents)
         return image.sample if hasattr(image, "sample") else image
 
@@ -152,8 +181,8 @@ class LightningDiTPipeline(DiffusionPipeline):
         num_inference_steps: int = 250,
         guidance_scale: float = 1.0,
         guidance_interval: Tuple[float, float] = (0.0, 1.0),
-        cfg_interval_start: Optional[float] = None,
-        timestep_shift: float = 0.0,
+        cfg_interval_start: float = 0.125,
+        timestep_shift: float = 0.3,
         heun: bool = False,
         cfg_channels: int = 3,
         latent_mean: Optional[torch.Tensor] = None,
@@ -230,10 +259,15 @@ class LightningDiTPipeline(DiffusionPipeline):
                     model_output, timestep[None], latents, next_timestep[None]
                 ).prev_sample
 
-        if latent_mean is not None and latent_std is not None:
-            latent_std = latent_std.to(device=latents.device, dtype=latents.dtype)
-            latent_mean = latent_mean.to(device=latents.device, dtype=latents.dtype)
-            latents = (latents * latent_std) / latent_multiplier + latent_mean
+        latent_mean, latent_std = self._resolve_latent_stats(
+            latent_mean, latent_std, device=latents.device, dtype=latents.dtype
+        )
+        if latent_mean is None or latent_std is None:
+            raise ValueError(
+                "LightningDiT requires latent denormalization before VAE decode. "
+                "Pass latent_mean and latent_std, or use a VAE config with latents_mean/latents_std."
+            )
+        latents = self._denormalize_latents(latents, latent_mean, latent_std, latent_multiplier)
 
         image = self._decode_latents(latents)
         if self.vae is not None:
